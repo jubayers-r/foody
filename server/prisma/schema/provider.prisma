@@ -1,0 +1,30 @@
+model Provider {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
+
+    userId String @unique
+    user   User   @relation(fields: [userId], references: [id])
+
+    // PROVIDER SPECIFIC
+    stripe_connect_id String? @unique // For getting paid
+
+    orders Order[]
+    meals  Meal[]
+
+    @@map("providers")
+}
+
+model Meal {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
+
+    price      Float
+    providerId String
+    provider   Provider    @relation(fields: [providerId], references: [id])
+    cartItems  CartItem[]
+    orderItems OrderItem[]
+
+    @@map("meals")
+}

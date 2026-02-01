@@ -1,14 +1,30 @@
 model User {
-  id            String    @id
+  id            String     @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean    @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
   sessions      Session[]
   accounts      Account[]
+  role          UserRoles //will be defined on signin either customer or provider, not admin
+  status        UserStatus @default(ACTIVE)
+  customer      Customer?
+  provider      Provider?
+  isDeleted     Boolean    @default(false)
 
   @@unique([email])
   @@map("user")
+}
+
+enum UserRoles {
+  CUSTOMER
+  PROVIDER
+  ADMIN
+}
+
+enum UserStatus {
+  SUSPEND
+  ACTIVE
 }

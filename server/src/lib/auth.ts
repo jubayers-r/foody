@@ -11,4 +11,26 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string", // Enums are stored as strings in JS/TS
+        required: true,
+        defaultValue: "CUSTOMER", // Safety fallback
+        input: true, // Allows the frontend to pass 'role' during sign-up
+      },
+      status: {
+        type: "string",
+        required: false,
+        defaultValue: "ACTIVE",
+        input: false, // Prevents users from making themselves 'ACTIVE' manually if suspended
+      },
+      isDeleted: {
+        type: "boolean",
+        required: false,
+        defaultValue: "false",
+        input: false,
+      },
+    },
+  },
 });

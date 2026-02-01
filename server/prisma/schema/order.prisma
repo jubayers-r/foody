@@ -1,0 +1,90 @@
+model Order {
+    id        String   @id @default(uuid()) // Changed @unique to @id
+    createdAt DateTime @default(now())
+    updateAt  DateTime @updatedAt
+
+    deliveryAddress String
+    paymentMethod   PaymentMethod
+    orderStatus     OrderStatus   @default(PENDING)
+    paymentStatus   PaymentStatus @default(UNPAID)
+
+    // New fields for better tracking
+    estimatedDelivery DateTime?
+
+    totalAmount  Float
+    transactions Transaction[]
+
+    customerId String
+    customer   Customer @relation(fields: [customerId], references: [id])
+
+    providerId String
+    provider   Provider    @relation(fields: [providerId], references: [id])
+    orderItems OrderItem[]
+
+    @@map("orders")
+}
+
+model OrderItem {
+    id      String @id @default(uuid())
+    orderId String
+    order   Order  @relation(fields: [orderId], references: [id])
+    mealId  String
+    meal    Meal   @relation(fields: [mealId], references: [id])
+
+    quantity        Int
+    priceAtPurchase Float // VERY IMPORTANT: Capture the price NOW
+}
+
+
+
+enum PaymentMethod {
+    COD
+    STRIPE
+}
+
+enum OrderStatus {
+    PENDING // Order placed, but not yet confirmed/processed
+    CONFIRMED // Order verified (often via OTP or call for COD)
+    SHIPPED // Handed over to the courier
+    OUT_FOR_DELIVERY // Courier is attempting delivery today
+    DELIVERED // Package handed over and cash collected
+    CANCELLED // Cancelled by user or admin before shipping
+    REJECTED // Customer refused the package at the doorstep
+    FAILED_ATTEMPT // Courier tried to deliver but customer was unavailable
+    RETURNED // Item sent back to warehouse after failed delivery
+}
+
+enum PaymentStatus {
+    UNPAID // Default for COD
+    PENDING // Initial state for online
+    PROCESSING // Gateway is verifying (important for webhooks)
+    PAID // Successful payment
+    FAILED // Payment declined
+    REFUNDED // Money sent back
+}
+
+enum TransactionType {
+    PAYMENT
+    REFUND
+}
+
+model Transaction {
+    id      String          @id @default(uuid())
+    orderId String
+    order   Order           @relation(fields: [orderId], references: [id])
+    type    TransactionType @default(PAYMENT) // Tracks if this was a charge or a refund
+
+    gateway          String // e.g., "Stripe", "Razorpay"
+    gatewayReference String @unique // The ID from the provider (e.g., ch_3N1...)
+
+    amount   Float
+    currency String        @default("USD")
+    status   PaymentStatus
+
+    rawResponse    Json? // Store the full webhook payload for debugging
+    stripeMetadata Json? // Useful for custom tracking (e.g., promo codes used)
+    failureMessage String? // "Card Declined", "Insufficient Funds", etc.
+    failureCode    String? // Stripe error codes like "card_error"
+
+    createdAt DateTime @default(now())
+}
