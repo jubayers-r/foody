@@ -1,25 +1,24 @@
 model Order {
-    id        String   @id @default(uuid()) // Changed @unique to @id
-    createdAt DateTime @default(now())
-    updateAt  DateTime @updatedAt
+    id         String   @id @default(uuid())
+    createdAt  DateTime @default(now())
+    updateAt   DateTime @updatedAt
+    customerId String
+    customer   Customer @relation(fields: [customerId], references: [id])
+    providerId String
+    provider   Provider @relation(fields: [providerId], references: [id])
+
+    totalAmount   Int
+    orderStatus   OrderStatus   @default(PENDING)
+    paymentStatus PaymentStatus @default(UNPAID)
 
     deliveryAddress String
-    paymentMethod   PaymentMethod
-    orderStatus     OrderStatus   @default(PENDING)
-    paymentStatus   PaymentStatus @default(UNPAID)
+    orderItems      OrderItem[]
 
     // New fields for better tracking
     estimatedDelivery DateTime?
 
-    totalAmount  Float
-    transactions Transaction[]
-
-    customerId String
-    customer   Customer @relation(fields: [customerId], references: [id])
-
-    providerId String
-    provider   Provider    @relation(fields: [providerId], references: [id])
-    orderItems OrderItem[]
+    paymentMethod PaymentMethod
+    payments      Payment[]
 
     @@map("orders")
 }
@@ -32,14 +31,9 @@ model OrderItem {
     meal    Meal   @relation(fields: [mealId], references: [id])
 
     quantity        Int
-    priceAtPurchase Float // VERY IMPORTANT: Capture the price NOW
-}
+    priceAtPurchase Int // snapshot of the price user actually pays if whey buy on sale or lower price
 
-
-
-enum PaymentMethod {
-    COD
-    STRIPE
+    @@map("order_items")
 }
 
 enum OrderStatus {
@@ -54,37 +48,7 @@ enum OrderStatus {
     RETURNED // Item sent back to warehouse after failed delivery
 }
 
-enum PaymentStatus {
-    UNPAID // Default for COD
-    PENDING // Initial state for online
-    PROCESSING // Gateway is verifying (important for webhooks)
-    PAID // Successful payment
-    FAILED // Payment declined
-    REFUNDED // Money sent back
-}
-
-enum TransactionType {
-    PAYMENT
-    REFUND
-}
-
-model Transaction {
-    id      String          @id @default(uuid())
-    orderId String
-    order   Order           @relation(fields: [orderId], references: [id])
-    type    TransactionType @default(PAYMENT) // Tracks if this was a charge or a refund
-
-    gateway          String // e.g., "Stripe", "Razorpay"
-    gatewayReference String @unique // The ID from the provider (e.g., ch_3N1...)
-
-    amount   Float
-    currency String        @default("USD")
-    status   PaymentStatus
-
-    rawResponse    Json? // Store the full webhook payload for debugging
-    stripeMetadata Json? // Useful for custom tracking (e.g., promo codes used)
-    failureMessage String? // "Card Declined", "Insufficient Funds", etc.
-    failureCode    String? // Stripe error codes like "card_error"
-
-    createdAt DateTime @default(now())
+enum PaymentMethod {
+    COD
+    STRIPE
 }

@@ -1,0 +1,50 @@
+model Payment {
+    id      String @id @default(uuid())
+    orderId String
+    order   Order  @relation(fields: [orderId], references: [id])
+
+    amount         Int // Total cents
+    currency       String @default("USD")
+    platformFee    Int? // Your commission
+    providerAmount Int? // What goes to the Chef
+
+    status            PaymentStatus @default(PENDING)
+    paymentMethodType String?
+    receiptUrl        String?
+
+    stripePaymentIntentId String? @unique // The ID from the provider (e.g., ch_3N1...)
+    stripeCustomerId      String?
+    stripeTransferId      String?
+
+    failureMessage String?
+    rawResponse    Json? // Full webhook audit
+
+    statusHistory PaymentHistory[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("payments")
+}
+
+model PaymentHistory {
+    id        String        @id @default(uuid())
+    paymentId String
+    payment   Payment       @relation(fields: [paymentId], references: [id])
+    status    PaymentStatus
+    message   String? // e.g., "Customer authenticated via 3DS"
+    createdAt DateTime      @default(now())
+}
+
+enum PaymentStatus {
+    UNPAID // Default for COD
+    PENDING // Initial state for online
+    PROCESSING // Gateway is verifying (important for webhooks)
+    REQUIRES_ACTION // For 3D Secure/SCA
+    AUTHORIZED // Hold on funds
+    PAID // Successful payment
+    FAILED // Payment declined
+    CANCELED
+    REFUNDED // Money sent back
+    PARTIALLY_REFUNDED
+}

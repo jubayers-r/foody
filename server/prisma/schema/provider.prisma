@@ -20,7 +20,8 @@ model Meal {
     createdAt DateTime @default(now())
     updateAt  DateTime @updatedAt
 
-    price      Float
+    price      Int // Stored in Cents (e.g., 1000 = $10.00)
+    inventory  Int?        @default(99) // Daily capacity limit
     providerId String
     provider   Provider    @relation(fields: [providerId], references: [id])
     cartItems  CartItem[]

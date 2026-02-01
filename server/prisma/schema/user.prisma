@@ -13,6 +13,7 @@ model User {
   customer      Customer?
   provider      Provider?
   isDeleted     Boolean    @default(false)
+  fcmTokens     String[]
 
   @@unique([email])
   @@map("user")
