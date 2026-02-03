@@ -37,5 +37,10 @@
     }
   },
   "include": ["src/**/*", "types/*.d.ts"],
-  "exclude": ["node_modules", "dist", "generated/prisma"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "generated/prisma",
+    "scripts/generate-module.ts"
+  ]
 }
