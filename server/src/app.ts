@@ -1,17 +1,17 @@
-import express, { Application } from "express";
-import cors from "cors";
-import { auth } from "./lib/auth";
 import { toNodeHandler } from "better-auth/node";
+import cors from "cors";
+import express, { Application } from "express";
+import { auth } from "./lib/auth";
 
 const app: Application = express();
+app.use(express.json());
 const apiV1 = express.Router();
 app.use("/api/v1/", apiV1);
 
 apiV1.all("/auth/{*any}", toNodeHandler(auth));
-app.use(express.json());
 app.use(
   cors({
-    origin: process.env.APP_URL,
+    origin: process.env.BETTER_AUTH_URL,
     credentials: true,
   }),
 );

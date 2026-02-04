@@ -7,7 +7,11 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
+  // This is your SERVER path
   baseURL: "http://localhost:5000/api/v1/auth",
+
+  // ADD THIS SECTION:
+  trustedOrigins: [process.env.BETTER_AUTH_URL!],
   emailAndPassword: {
     enabled: true,
   },
@@ -28,7 +32,7 @@ export const auth = betterAuth({
       isDeleted: {
         type: "boolean",
         required: false,
-        defaultValue: "false",
+        defaultValue: false,
         input: false,
       },
     },
