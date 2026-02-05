@@ -2,6 +2,7 @@ import { toNodeHandler } from "better-auth/node";
 import cors from "cors";
 import express, { Application } from "express";
 import { auth } from "./lib/auth";
+import { userRoutes } from "./modules/user/user.routes";
 
 const app: Application = express();
 app.use(express.json());
@@ -15,5 +16,7 @@ app.use(
     credentials: true,
   }),
 );
+
+apiV1.use("/users", userRoutes);
 
 export default app;
