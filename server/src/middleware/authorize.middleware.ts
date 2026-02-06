@@ -1,13 +1,8 @@
 import { auth } from "@/lib/auth";
 import { NextFunction, Request, Response } from "express";
+import { UserRoles } from "generated/prisma/enums";
 
-export enum UserRole {
-  CUSTOMER = "CUSTOMER",
-  PROVIDER = "PROVIDER",
-  ADMIN = "ADMIN",
-}
-
-const authorize = (...roles: UserRole[]) => {
+const authorize = (...roles: UserRoles[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const session = await auth.api.getSession({
@@ -36,7 +31,7 @@ const authorize = (...roles: UserRole[]) => {
         emailVerified: session?.user.emailVerified!,
       };
 
-      if (roles.length && !roles.includes(req.user.role as UserRole)) {
+      if (roles.length && !roles.includes(req.user.role as UserRoles)) {
         return res.status(403).json({
           success: false,
           message:
